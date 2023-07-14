@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   caddy:
-    restart: always
+    restart: unless-stopped
     image: caddy:2
     volumes:
       - ${FZ_INSTALL_DIR:-.}/caddy:/data/caddy
@@ -34,9 +34,9 @@ services:
       - firezone
 
   firezone:
-    restart: always
+    restart: unless-stopped
     #lot of breaking changes. need to specify version manually
-    image: firezone/firezone:0.7.30
+    image: firezone/firezone:0.7.32
     ports:
       - ${FZ_PORT:-51820}:${FZ_PORT:-51820}/udp
     env_file:
@@ -62,6 +62,7 @@ services:
         condition: service_healthy
     networks:
       firezone-network:
+        ipv4_address: 172.25.0.100
     healthcheck:
       test:  ["CMD-SHELL", "wget -q http://127.0.0.1:13000/ -O /dev/null"]
       interval: 10s
@@ -69,7 +70,7 @@ services:
       retries: 20
       start_period: 10s
   postgres:
-    restart: always
+    restart: unless-stopped
     image: postgres:15
     volumes:
       - ${FZ_INSTALL_DIR:-.}/postgres-data:/var/lib/postgresql/data
@@ -87,7 +88,7 @@ services:
       - firezone-network
 
   conntrack-log:
-    restart: always
+    restart: unless-stopped
     privileged: true
     depends_on:
       firezone:
@@ -98,7 +99,7 @@ services:
     cap_add:
       - NET_ADMIN
   autoheal:
-    restart: always
+    restart: unless-stopped
     image: willfarrell/autoheal
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -115,4 +116,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: ${FZ_SUBNET:?err}
+        - subnet: 172.25.0.0/16

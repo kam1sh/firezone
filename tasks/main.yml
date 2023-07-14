@@ -27,10 +27,6 @@
       state: absent
   when: firezone_redeploy
 
-
-- ansible.builtin.set_fact:
-    mgr_ip: "{{ mgmt_subnet | ansible.utils.nthhost(3) }}"
-
 - name: Ensure firezone_dir exists
   ansible.builtin.file:
     path: "{{ firezone_dir }}"
